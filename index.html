@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        const API_URL = 'https://drsivambbs-xray-diagnosis-tool.hf.space/api/diagnose';
+        const API_URL = 'https://drsivambbs-xray-diagnosis-tool.hf.space/call/diagnose';
         
         document.getElementById('fileInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
@@ -46,16 +46,26 @@
                 const formData = new FormData();
                 formData.append('data', file);
                 
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const results = await response.json();
-                displayResults(results);
+                // Convert image to base64
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    const base64 = e.target.result;
+                    
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ data: [base64] })
+                    });
+                    
+                    const result = await response.json();
+                    const results = result.data[0];
+                    displayResults(results);
+                    document.getElementById('loading').style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+                return;
             } catch (error) {
                 alert('Error: ' + error.message);
-            } finally {
                 document.getElementById('loading').style.display = 'none';
             }
         });
