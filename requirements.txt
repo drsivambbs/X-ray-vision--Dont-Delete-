@@ -1,0 +1,7 @@
+torchxrayvision
+gradio
+torch
+torchvision
+pillow
+numpy
+huggingface_hub
