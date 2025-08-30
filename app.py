@@ -4,14 +4,19 @@ import torch
 import numpy as np
 from PIL import Image
 
-# Load pretrained model
-model = xrv.models.DenseNet(weights="densenet121-res224-all")
-model.eval()
+# Load pretrained models
+model1 = xrv.models.DenseNet(weights="densenet121-res224-all")
+model2 = xrv.models.DenseNet(weights="densenet121-res224-rsna")
+model1.eval()
+model2.eval()
 
-def diagnose_xray(image):
+def diagnose_xray(image, model_choice):
     """Diagnose X-ray image using TorchXRayVision"""
     if image is None:
         return "Please upload an X-ray image"
+    
+    # Select model
+    model = model1 if model_choice == "All Datasets" else model2
     
     # Preprocess image
     img = np.array(image.convert('L'))  # Convert to grayscale
@@ -36,10 +41,13 @@ def diagnose_xray(image):
 # Create Gradio interface
 demo = gr.Interface(
     fn=diagnose_xray,
-    inputs=gr.Image(type="pil", label="Upload X-ray Image"),
+    inputs=[
+        gr.Image(type="pil", label="Upload X-ray Image"),
+        gr.Dropdown(["All Datasets", "RSNA Pneumonia"], value="All Datasets", label="Select Model")
+    ],
     outputs=gr.Label(num_top_classes=10, label="Diagnosis Predictions"),
-    title="🩻 X-ray Diagnosis Tool",
-    description="Upload an X-ray image to get AI-powered diagnosis predictions using TorchXRayVision",
+    title="🩻 X-ray Diagnosis Tool - Dual Models",
+    description="Upload an X-ray image and choose between two pretrained models for AI diagnosis",
     examples=[],
     api_name="diagnose"
 )
